@@ -1,7 +1,7 @@
 <template>
   <div class="font-abc">
-    <div class="text-center text-2xl font-bold text-green-900 p-2 pb-">
-      จัดการสินค้า
+    <div class="text-center text-2xl font-bold text-green-900 p-4 pb-4">
+      จัดการบทความ
     </div>
     <div class="mb-4 p-2">
       <input
@@ -13,11 +13,11 @@
 
     <div class="overflow-x-auto">
       <div class="p-2 flex gap-2">
-        <NuxtLink to="/AddProduct">
+        <NuxtLink to="/Addcontent">
           <button
             class="bg-transparent hover:bg-green-500 text-green-700 font-medium hover:text-white py-2 px-4 border border-green-500 hover:border-transparent rounded"
           >
-            เพิ่มสินค้าใหม่
+            เพิ่มบทความใหม่
           </button>
         </NuxtLink>
         <button
@@ -32,19 +32,17 @@
           {{ selectAll ? "ล้างทั้งหมด" : "เลือกทั้งหมด" }}
         </button>
         <span class="p-2 mr-auto"
-          >{{ selectedItems.length }} สินค้าที่เลือก</span
+          >{{ selectedItems.length }} บทความที่เลือก</span
         >
       </div>
-
       <div class="overflow-x-auto max-sm:max-w-[170vh]">
         <table class="table">
           <thead class="textarea-md">
             <tr>
               <th></th>
-              <th>ชื่อสินค้า</th>
+              <th>ชื่อบทความ</th>
               <th>ประเภท</th>
-              <th>ราคา</th>
-              <th>สถานะ</th>
+              <th>วันที่</th>
               <th>แก้ไข/ลบ</th>
             </tr>
           </thead>
@@ -59,12 +57,11 @@
               </td>
               <td>{{ item.name }}</td>
               <td>{{ item.category }}</td>
-              <td>{{ item.price }} บาท</td>
-              <td>{{ item.availability ? "มีสินค้า" : "หมดสต็อก" }}</td>
+              <td>{{ item.date }}</td>
 
               <td class="pr-2 flex flex-row gap-4">
                 <NuxtLink
-                  :to="`/product-detail/${item.id}`"
+                  :to="`/content-detail/${item.id}`"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="link-with-icon"
@@ -72,7 +69,7 @@
                   <i class="fa-regular fa-pen-to-square"></i>
                 </NuxtLink>
 
-                <button @click="deleteProduct(item.id)">
+                <button @click="deleteContent(item.id)">
                   <i class="fa-regular fa-trash-can"></i>
                 </button>
               </td>
@@ -81,21 +78,23 @@
         </table>
       </div>
 
-      <!-- ปุ่มลบสินค้า -->
+      <!-- ปุ่มลบบทความ -->
 
       <div class="p-2">
-        <button
-          @click="deleteSelectedProducts"
-          class="bg-transparent hover:bg-red-500 text-red-700 font-medium hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded"
-        >
-          ลบสินค้า
-        </button>
+        <div>
+          <button
+            @click="deleteSelectedContents"
+            class="bg-transparent hover:bg-red-500 text-red-700 font-medium hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded"
+          >
+            ลบบทความ
+          </button>
+        </div>
       </div>
 
       <!-- หน้าถัดไป -->
       <div class="flex flex-col items-center pt-16">
         <span class="text-sm text-gray-700 dark:text-gray-400">
-          แสดงข้อมูลสินค้า
+          แสดงข้อมูลบทความ
           <span class="font-semibold text-gray-900 dark:text-white">1</span> ถึง
           <span class="font-semibold text-gray-900 dark:text-white">50</span>
 
@@ -152,16 +151,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import type { Product } from "~/models/product.model";
+import type { Content } from "~/models/content.model";
 
 const router = useRouter();
 
-const data = ref<Product[]>([]);
+const data = ref<Content[]>([]);
 
 onMounted(() => {
-  const storedProducts = localStorage.getItem("products");
-  if (storedProducts) {
-    data.value = JSON.parse(storedProducts);
+  const storedContents = localStorage.getItem("Contents");
+  if (storedContents) {
+    data.value = JSON.parse(storedContents);
   }
 });
 
@@ -175,48 +174,46 @@ const filteredData = computed(() => {
   return data.value.filter((item) => {
     return (
       item.name.toLowerCase().includes(query) ||
-      item.category.toLowerCase().includes(query) ||
-      item.price.toString().includes(query) ||
-      (item.availability ? "มีสินค้า" : "หมดสต็อก").includes(query)
+      item.category.toLowerCase().includes(query)
     );
   });
 });
 
-const deleteProduct = (productId: number) => {
-  const storedProducts = localStorage.getItem("products");
-  if (storedProducts) {
-    let products: Product[] = JSON.parse(storedProducts);
-    products = products.filter((p) => p.id !== productId);
-    localStorage.setItem("products", JSON.stringify(products));
-    data.value = products;
+const deleteContent = (contentId: number) => {
+  const storedContents = localStorage.getItem("Contents");
+  if (storedContents) {
+    let contents: Content[] = JSON.parse(storedContents);
+    contents = contents.filter((p) => p.id !== contentId);
+    localStorage.setItem("Contents", JSON.stringify(contents));
+    data.value = contents;
   }
 };
 
-const deleteSelectedProducts = () => {
+const deleteSelectedContents = () => {
   if (selectedItems.value.length === 0) {
-    alert("กรุณาเลือกสินค้าที่ต้องการลบ");
+    alert("กรุณาเลือกบทความที่ต้องการลบ");
     return;
   }
 
-  const storedProducts = localStorage.getItem("products");
-  if (storedProducts) {
-    let products: Product[] = JSON.parse(storedProducts);
-    products = products.filter((p) => !selectedItems.value.includes(p.id));
-    localStorage.setItem("products", JSON.stringify(products));
-    data.value = products;
+  const storedContents = localStorage.getItem("Contents");
+  if (storedContents) {
+    let contents: Content[] = JSON.parse(storedContents);
+    contents = contents.filter((p) => !selectedItems.value.includes(p.id));
+    localStorage.setItem("Contents", JSON.stringify(contents));
+    data.value = contents;
     selectedItems.value = [];
     selectAll.value = false;
   }
 };
 
-const isSelected = (productId: number) => {
-  return selectedItems.value.includes(productId);
+const isSelected = (contentId: number) => {
+  return selectedItems.value.includes(contentId);
 };
 
-const toggleSelection = (productId: number) => {
-  const index = selectedItems.value.indexOf(productId);
+const toggleSelection = (contentId: number) => {
+  const index = selectedItems.value.indexOf(contentId);
   if (index === -1) {
-    selectedItems.value.push(productId);
+    selectedItems.value.push(contentId);
   } else {
     selectedItems.value.splice(index, 1);
   }
