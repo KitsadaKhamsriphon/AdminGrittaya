@@ -1,12 +1,25 @@
 <template>
-  <div>
-    <navbar />
+  <div class="flex gap-16">
+    <div
+      :class="{
+        'w-72': open,
+        'w-20': !open,
+        hidden: path == '/login',
+      }"
+      class="font-abc"
+    >
+      <Sidebar @reload="open = $event" />
+    </div>
+    <div class="w-full font-abc max-sm:pl-4">
+      <slot />
+    </div>
   </div>
-  <slot />
 </template>
 
 <script setup lang="ts">
-import type Navbar from "~/components/navbar/navbar.vue";
+const open = ref(true);
+const router = useRouter();
+const path = ref(router.currentRoute.value?.path);
 </script>
 
 <style scoped></style>
